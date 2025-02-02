@@ -1,0 +1,48 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: go_auth
+      MYSQL_USER: go_user
+      MYSQL_PASSWORD: go_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - go-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 5s
+      retries: 5
+      start_period: 30s
+
+  go-app:
+    build: .
+    container_name: go_auth_app
+    depends_on:
+      mysql:
+        condition: service_healthy  # Wait for MySQL to be healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: go_user
+      DB_PASSWORD: go_password
+      DB_NAME: go_auth
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    networks:
+      - go-network
+    restart: always
+
+networks:
+  go-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
