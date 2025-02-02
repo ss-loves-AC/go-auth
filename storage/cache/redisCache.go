@@ -89,6 +89,16 @@ func (r *RedisCache) SetRefreshToken(ctx context.Context, jti string, value *mod
 	}
 }
 
+func (r *RedisCache) DeleteRefreshToken(ctx context.Context, jti string) error {
+	key := "refresh_token:" + jti 
+	err := r.Client.Del(ctx, key).Err() 
+	if err != nil {
+		log.Println("Error deleting refresh token from Redis:", err)
+		return err
+	}
+	return nil
+}
+
 func (r *RedisCache) GetRevokedToken(ctx context.Context, jti string) (*models.RevokedToken, bool) {
 	val, err := r.Client.Get(ctx, "revoked_token:"+jti).Result()
 	if err == redis.Nil {
