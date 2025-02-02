@@ -10,7 +10,7 @@ type Cache interface {
 	SetUser(ctx context.Context, key string, value *models.User)  // Store user data
 
 	GetRefreshToken(ctx context.Context, jti string) (*models.RefreshToken, bool) // Retrieve refresh token by JTI
-	SetRefreshToken(ctx context.Context, jti string, value *models.RefreshToken)  // Store refresh token
+	SetRefreshToken(ctx context.Context, jti string, value *models.RefreshToken) (error) // Store refresh token
 	DeleteRefreshToken(ctx context.Context, jti string) error // delete refresh token
 
 	GetRevokedToken(ctx context.Context, jti string) (*models.RevokedToken, bool) // Retrieve revoked token by JTI

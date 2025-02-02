@@ -76,22 +76,24 @@ func (r *RedisCache) GetRefreshToken(ctx context.Context, jti string) (*models.R
 	return &token, true
 }
 
-func (r *RedisCache) SetRefreshToken(ctx context.Context, jti string, value *models.RefreshToken) {
+func (r *RedisCache) SetRefreshToken(ctx context.Context, jti string, value *models.RefreshToken) (error) {
 	tokenJSON, err := json.Marshal(value)
 	if err != nil {
 		log.Println("Error marshalling refresh token for Redis:", err)
-		return
+		return err
 	}
 
 	err = r.Client.Set(ctx, "refresh_token:"+jti, tokenJSON, time.Until(value.ExpiresAt)).Err()
 	if err != nil {
 		log.Println("Error setting refresh token in Redis:", err)
+		return err
 	}
+	return nil
 }
 
 func (r *RedisCache) DeleteRefreshToken(ctx context.Context, jti string) error {
-	key := "refresh_token:" + jti 
-	err := r.Client.Del(ctx, key).Err() 
+	key := "refresh_token:" + jti
+	err := r.Client.Del(ctx, key).Err()
 	if err != nil {
 		log.Println("Error deleting refresh token from Redis:", err)
 		return err
