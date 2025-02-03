@@ -1,3 +1,4 @@
+version: '3'
 services:
   mysql:
     image: mysql:8.0
@@ -19,18 +20,36 @@ services:
       retries: 5
       start_period: 30s
 
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - go-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+
   go-app:
     build: .
     container_name: go_auth_app
     depends_on:
       mysql:
         condition: service_healthy  # Wait for MySQL to be healthy
+      redis:
+        condition: service_healthy  # Wait for Redis to be healthy
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
       DB_USER: go_user
       DB_PASSWORD: go_password
       DB_NAME: go_auth
+      REDIS_HOST: redis  
+      REDIS_PORT: 6379   
     ports:
       - "8080:8080"
     env_file:
